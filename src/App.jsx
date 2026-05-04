@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import client from './insforge.js';
-import { PROFILE, SECTIONS, VIDEOS, CONTACT, ADMIN } from './data.js';
+import { PROFILE, SECTIONS, VIDEOS, CONTACT, ADMIN, PORTFOLIO } from './data.js';
 
 /* ─── SECTION ICONS ─── */
 const ICONS = {
@@ -221,7 +221,7 @@ function Hero() {
       <div className={`hero-content${loaded ? ' loaded' : ''}`} ref={wrap}>
         <div className="hero-text">
           <h1 className="hero-name hero-name-single">
-            <span>Manohar</span><span className="hero-name-dot"> .</span><span className="hero-name-accent">S</span>
+            <span>Manohar</span><span className="hero-name-dot"> .</span><span className="hero-name-accent">{PORTFOLIO.heroAccent}</span>
           </h1>
           <p className="hero-intro">{PROFILE.intro}</p>
 
@@ -394,7 +394,7 @@ function VideoSection() {
 
 /* ─── RESUME ─── */
 function ResumeSection() {
-  const resumeImgId = '1nntVDhbix2AiPEjwTGH591tbO-A0YcHO';
+  const resumeImgId = PORTFOLIO.resumeId;
   const resumeUrl = `https://drive.google.com/thumbnail?id=${resumeImgId}&sz=w1600`;
   
   return (
@@ -526,7 +526,7 @@ import CommandCenter from './CommandCenter.jsx';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [entered, setEntered] = useState(() => !!localStorage.getItem('visitor_name'));
+  const [entered, setEntered] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [toast, setToast] = useState(null);
@@ -554,6 +554,16 @@ export default function App() {
           if (p.videos) {
             VIDEOS.length = 0;
             p.videos.forEach(v => VIDEOS.push(v));
+          }
+          if (p.portfolio) {
+            Object.assign(PORTFOLIO, p.portfolio);
+          }
+          if (p.themeColor) {
+            document.documentElement.style.setProperty('--cyan', p.themeColor);
+            document.documentElement.style.setProperty('--teal', p.themeColor);
+            document.documentElement.style.setProperty('--purple', p.themeColor);
+            document.documentElement.style.setProperty('--glow', `0 0 20px ${p.themeColor}80`);
+            document.documentElement.style.setProperty('--glow-sm', `0 0 10px ${p.themeColor}80`);
           }
         }
       } catch (err) {
@@ -620,9 +630,9 @@ export default function App() {
         <ContactSection />
 
         <footer className="footer" role="contentinfo">
-          <div className="footer-logo">Manohar <span>.S</span></div>
+          <div className="footer-logo">Manohar <span>.{PORTFOLIO.heroAccent}</span></div>
           <p>© {new Date().getFullYear()} S. Manohar — Crafted with passion & code</p>
-          <p className="footer-sub">CSE Student | Developer | NCC Cadet | Entrepreneur | Athlete | Leader</p>
+          <p className="footer-sub">{PORTFOLIO.footerSub}</p>
         </footer>
       </div>
 

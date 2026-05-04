@@ -176,3 +176,9 @@ export const CONTACT = {
 };
 
 export const ADMIN = { name: "Manohar", password: "2026" };
+
+export const PORTFOLIO = {
+  resumeId: '1nntVDhbix2AiPEjwTGH591tbO-A0YcHO',
+  heroAccent: 'S',
+  footerSub: 'CSE Student | Developer | NCC Cadet | Entrepreneur | Athlete | Leader'
+};

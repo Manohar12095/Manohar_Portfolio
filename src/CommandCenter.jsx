@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { PROFILE, SECTIONS, VIDEOS, CONTACT, ADMIN } from './data.js';
+import { PROFILE, SECTIONS, VIDEOS, CONTACT, ADMIN, PORTFOLIO } from './data.js';
 import client from './insforge.js';
 
 /* ── TAB CONFIG ── */
@@ -9,6 +9,7 @@ const TABS = [
   { id: 'contact', label: 'Contact', icon: '📞' },
   { id: 'theme', label: 'Theme', icon: '🎨' },
   { id: 'media', label: 'Media', icon: '🎬' },
+  { id: 'portfolio', label: 'Portfolio', icon: '💼' },
   { id: 'security', label: 'Security', icon: '🔐' },
 ];
 
@@ -38,11 +39,18 @@ export default function CommandCenter({ onBack }) {
   );
 
   /* ── CONTACT STATE ── */
-  const [contact, setContact] = useState({ ...CONTACT });
+  const [contact, setContact] = useState({ 
+    phone: CONTACT.phone || '',
+    whatsapp: CONTACT.whatsapp || '',
+    email: CONTACT.email || '',
+    linkedin: CONTACT.linkedin || '',
+    github: CONTACT.github || '',
+    location: CONTACT.location || ''
+  });
 
   /* ── THEME STATE ── */
-  const [activeColor, setActiveColor] = useState('#00ffcc');
-  const [customColor, setCustomColor] = useState('#00ffcc');
+  const [activeColor, setActiveColor] = useState(getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim() || '#00ffcc');
+  const [customColor, setCustomColor] = useState(activeColor);
   const colors = ['#00ffcc', '#ff2d55', '#ccff00', '#007aff', '#ff9500', '#af52de', '#e91e63', '#00bcd4'];
 
   /* ── MEDIA STATE ── */
@@ -57,6 +65,13 @@ export default function CommandCenter({ onBack }) {
   /* ── NEW SECTION STATE ── */
   const [newSection, setNewSection] = useState({
     key: '', title: '', theme: 'dark', image: '', items: ['']
+  });
+
+  /* ── PORTFOLIO STATE ── */
+  const [portfolio, setPortfolio] = useState({
+    resumeId: PORTFOLIO.resumeId,
+    heroAccent: PORTFOLIO.heroAccent,
+    footerSub: PORTFOLIO.footerSub
   });
 
   /* ── HELPERS ── */
@@ -162,6 +177,7 @@ export default function CommandCenter({ onBack }) {
     PROFILE.intro = profile.intro;
     PROFILE.image = profile.image;
     CONTACT.phone = contact.phone;
+    CONTACT.whatsapp = contact.whatsapp;
     CONTACT.email = contact.email;
     CONTACT.linkedin = contact.linkedin;
     CONTACT.github = contact.github;
@@ -181,7 +197,9 @@ export default function CommandCenter({ onBack }) {
       sections: SECTIONS,
       videos: VIDEOS,
       contact: CONTACT,
-      admin: ADMIN
+      admin: ADMIN,
+      themeColor: activeColor,
+      portfolio: portfolio
     };
 
     try {
@@ -196,6 +214,27 @@ export default function CommandCenter({ onBack }) {
       showToast('Error saving to database', 'error');
     }
   };
+
+  /* ── LOAD DATA ── */
+  useState(() => {
+    const loadData = async () => {
+      try {
+        const { data } = await client.database.from('portfolio_data').select('payload').eq('id', 'main').single();
+        if (data?.payload) {
+          const p = data.payload;
+          if (p.themeColor) {
+            setActiveColor(p.themeColor);
+            setCustomColor(p.themeColor);
+            applyTheme(p.themeColor);
+          }
+          if (p.portfolio) {
+            setPortfolio(p.portfolio);
+          }
+        }
+      } catch (err) { console.error("Load error:", err); }
+    };
+    loadData();
+  });
 
   /* ── RENDER ── */
   return (
@@ -411,6 +450,11 @@ export default function CommandCenter({ onBack }) {
                     onChange={e => setContact(c => ({ ...c, phone: e.target.value }))} />
                 </div>
                 <div className="admin-field">
+                  <label>💬 WHATSAPP NUMBER</label>
+                  <input className="admin-input" value={contact.whatsapp}
+                    onChange={e => setContact(c => ({ ...c, whatsapp: e.target.value }))} />
+                </div>
+                <div className="admin-field">
                   <label>✉️ EMAIL ADDRESS</label>
                   <input className="admin-input" value={contact.email}
                     onChange={e => setContact(c => ({ ...c, email: e.target.value }))} />
@@ -548,6 +592,39 @@ export default function CommandCenter({ onBack }) {
                       onChange={e => updateSectionField(i, 'image', e.target.value)} />
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ═══════ PORTFOLIO TAB ═══════ */}
+        {activeTab === 'portfolio' && (
+          <section className="admin-section" key="portfolio">
+            <div className="admin-section-header">
+              <h2>💼 Portfolio Settings</h2>
+              <p className="admin-section-desc">Manage global portfolio assets and text elements</p>
+            </div>
+
+            <div className="admin-card-bg">
+              <div className="admin-grid">
+                <div className="admin-field">
+                  <label>RESUME GOOGLE DRIVE ID</label>
+                  <input className="admin-input" value={portfolio.resumeId}
+                    onChange={e => setPortfolio(p => ({ ...p, resumeId: e.target.value }))}
+                    placeholder="e.g. 1nntVDhbix2AiPEjwTGH..." />
+                  <p className="field-hint">The ID from your Google Drive share link</p>
+                </div>
+                <div className="admin-field">
+                  <label>HERO ACCENT INITIAL</label>
+                  <input className="admin-input" value={portfolio.heroAccent}
+                    onChange={e => setPortfolio(p => ({ ...p, heroAccent: e.target.value }))}
+                    placeholder="e.g. S" />
+                </div>
+                <div className="admin-field" style={{ gridColumn: '1 / -1' }}>
+                  <label>FOOTER SUBTITLE / TAGS</label>
+                  <input className="admin-input" value={portfolio.footerSub}
+                    onChange={e => setPortfolio(p => ({ ...p, footerSub: e.target.value }))} />
+                </div>
               </div>
             </div>
           </section>
